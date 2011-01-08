@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require 'yaml'
+
+if ARGV.size != 2
+  STDERR.puts "Usage: abortctl [command] [daemon]"
+  STDERR.puts "Commands: start, stop, load, unload"
+  exist
+end
+
+command = ARGV[0]
+daemon  = ARGV[1]
+
+daemons = YAML.load_file(File.expand_path("~/.abortctl")) rescue {}
+
+launch_file = File.expand_path(daemons[daemon.downcase])
+
+case command.downcase
+when 'load', 'start'
+  system("launchctl load -w #{launch_file}")
+when 'unload', 'stop'
+  system("launchctl unload #{launch_file}")
+else
+  puts "What the fuck are you doing?"
+end
+
+# vim:filetype=ruby
