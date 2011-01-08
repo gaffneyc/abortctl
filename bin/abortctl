@@ -1,25 +1,31 @@
 #!/usr/bin/env ruby
 
+require 'rubygems'
 require 'yaml'
-
-if ARGV.size != 2
-  STDERR.puts "Usage: abortctl [command] [daemon]"
-  STDERR.puts "Commands: start, stop, load, unload"
-  exist
-end
 
 command = ARGV[0]
 daemon  = ARGV[1]
 
+if (ARGV.size == 1 && command != 'list') && ARGV.size != 2
+  puts ARGV.size
+  puts command.inspect
+  STDERR.puts "Usage: abortctl [command] [daemon]"
+  STDERR.puts "Commands: start, load, stop, unload, list"
+  exit
+end
+
+
 daemons = YAML.load_file(File.expand_path("~/.abortctl")) rescue {}
 
-launch_file = File.expand_path(daemons[daemon.downcase])
+launch_file = File.expand_path(daemons[daemon.downcase]) if daemon
 
 case command.downcase
 when 'load', 'start'
   system("launchctl load -w #{launch_file}")
 when 'unload', 'stop'
   system("launchctl unload #{launch_file}")
+when 'list'
+  daemons.keys.each { |d| puts d }
 else
   puts "What the fuck are you doing?"
 end
